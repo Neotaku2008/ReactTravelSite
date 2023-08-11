@@ -1,0 +1,54 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: |
+          yarn install
+          npm install matchmedia-polyfill --save
+
+      - name: Code quality
+        run: yarn prettier --write --ignore-path .prettierignore "src/**"
+
+      - name: Build application
+        run: yarn build
+
+      - name: Run tests
+        run: yarn test
+
+      - name: Publish Docker image to Docker Hub
+        env:
+          DockerUser: ${{ secrets.DOCKERUSER }}
+          DockerPass: ${{ secrets.DOCKERPASS }}
+        run: |
+          echo $DockerPass | docker login -u $DockerUser --password-stdin
+          docker build -t $DockerUser/travelmaster:latest .
+          docker push $DockerUser/travelmaster:latest
+
+      - name: Create ZIP file
+        run: git archive --format=tar.gz main -o apptravelmaster.tar.gz
+
+      - name: Deploy to PRE
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npm install --global vercel
+          vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
+          vercel build --token=$VERCEL_TOKEN
+          vercel deploy --token=$VERCEL_TOKEN
