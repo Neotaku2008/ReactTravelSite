@@ -34,7 +34,7 @@ jobs:
 
       - name: Publish Docker image to Docker Hub
         env:
-          DockerUser: ${{ secrets.DOCKERUSER }}
+          DockerUser: ${{ secrets.DOCKERSR }}
           DockerPass: ${{ secrets.DOCKERPASS }}
         run: |
           echo $DockerPass | docker login -u $DockerUser --password-stdin
