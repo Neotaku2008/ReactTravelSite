@@ -5,10 +5,10 @@
 FROM node:16
 
 # Establece el directorio de trabajo dentro del contenedor
-WORKDIR /app
+WORKDI /app
 
 # Copia el archivo: package.json
-COPY package.json /app
+COP package.json /app
 
 # Instala las dependencias
 RUN yarn install
